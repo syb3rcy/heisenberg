@@ -18,22 +18,23 @@ def srvListener():
     while True:
         clientCon, clientAdd = s.accept()
         print(f"Connection from {clientAdd}")
-       
         clientCon.send(msgSrv.encode())
         msg = clientCon.recv(1024).decode()
         if msg:
             storage(msg)
-
+    
+    
 def storage(info):
     global responses
-    info = info.split(":") 
+    global clientConList
+    info = info.split("-:-") 
     responses[info[0]] = info[1]
     output()
 
+
 def output():
     print(responses)
-    print(type(responses))  
+    
 
 if __name__=='__main__':
-    t1= threading.Thread(target=srvListener)
-    t1.start()
+    srvListener()
