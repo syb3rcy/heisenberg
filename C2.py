@@ -1,14 +1,12 @@
 #!/usr/bin/python3
 
 import socket
-import threading
-import time
-responses = {}
+import json
+import os
 
 def srvListener():
-    ipAddr = '192.168.2.58'
+    ipAddr = '192.168.2.60'
     port = 1234
-    msgSrv = "pwd"
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -18,22 +16,28 @@ def srvListener():
     while True:
         clientCon, clientAdd = s.accept()
         print(f"Connection from {clientAdd}")
-        clientCon.send(msgSrv.encode())
-        msg = clientCon.recv(1024).decode()
-        if msg:
-            storage(msg)
-    
-    
-def storage(info):
-    global responses
-    global clientConList
-    info = info.split("-:-") 
-    responses[info[0]] = info[1]
-    output()
+        identity = clientCon.recv(1024).decode() #client will tell you who it is
+        taskList = instructionSet(identity) # Checking to see if there's any tasks queue'd up for client
+        taskList = json.dumps(taskList)
+        
+        clientCon.send(taskList.encode())
+        reply = clientCon.recv(1024).decode()
+        reply = json.loads(reply)
+        dataStorage(identity, reply)
+            
+def instructionSet(identity):
+    identity = 'Q' + str(identity) 
+    try:
+        fileRead = open('{}'.format(identity), 'r')      
+    except:
+        return ['Quit']
+    return fileRead.readlines()
 
-
-def output():
-    print(responses)
+    
+def dataStorage(identity, reply):     
+    fileAppend = open('{}'.format(identity), 'a+')
+    fileAppend.write(str(reply))
+    
     
 
 if __name__=='__main__':

