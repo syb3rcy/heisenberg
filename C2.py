@@ -2,7 +2,6 @@
 
 import socket
 import json
-import os
 
 def srvListener():
     ipAddr = '192.168.2.60'
@@ -37,7 +36,10 @@ def instructionSet(identity):
 def dataStorage(identity, reply):     
     fileAppend = open('{}'.format(identity), 'a+')
     fileAppend.write(str(reply))
-    
+    #remove items from queue
+    identity = 'Q' + str(identity) 
+    f = open(identity, 'w')
+    f.write('')   
     
 
 if __name__=='__main__':
